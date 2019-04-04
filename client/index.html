@@ -29,8 +29,7 @@
     </div>
     <div class="col-md-5 col-table">
       <div class="col-content bg">
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua.
+        <ul id="git-readme"></ul>
       </div>
     </div>
 
@@ -89,17 +88,34 @@
       event.preventDefault()
       $.ajax({
         method: 'get',
-        url: `${baseUrl}/users/${user}/repos`
+        url: `${baseUrl}/users/${user}/starred`
       })
         .done((response) => {
+          console.log((response));
+
           $('#gith-list').empty()
           $.each(response, (key, repo) => {
-            $('#gith-list').append(`<li>${repo.full_name}</li>`)
+            $('#gith-list').append(
+              `<li onclick="fetchReadme('${user}', '${repo.full_name}')">
+                <a href ="">
+                  ${repo.full_name}
+                </a>
+              </li>`)
           })
         })
         .fail(err => {
 
         })
+    }
+
+    function fetchReadme(user, repos) {
+      event.preventDefault()
+      $.ajax({
+        method: 'get',
+        url: `${baseUrl}/users/${user}/starred`
+      })
+        
+
     }
   </script>
 </body>

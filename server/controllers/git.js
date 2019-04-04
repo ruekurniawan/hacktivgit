@@ -6,8 +6,6 @@ ax.defaults.headers.common['Authorization'] = `token ${process.env.GITHUB_TOKEN}
 
 class UserController {
   static getRepos(req, res) {
-    console.log('ooooooooooo');
-
     ax
       .get('/user/repos')
       .then(({ data }) => {
@@ -93,6 +91,17 @@ class UserController {
       .get('/user/following')
       .then(({ data }) => {
         res.status(200).json(data)
+      })
+      .catch(err => {
+        res.status(500).json(err)
+      })
+  }
+
+  static getReadme(req, res) {
+    ax
+      .get(`/repos/${req.params.owner}/${req.params.repos}/readme`)
+      .then(({ allReadme }) => {
+        res.status(200).json(allReadme)
       })
       .catch(err => {
         res.status(500).json(err)

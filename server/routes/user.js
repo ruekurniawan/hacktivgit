@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const userController = require('../controllers/git')
 
+router.post('/login', userController.gLogin)
 router.get('/', userController.getRepos)
 router.post('/', userController.createRepos)
 router.delete('/:owner/:reponame', userController.deleteRepos)

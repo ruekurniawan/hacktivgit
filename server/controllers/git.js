@@ -1,4 +1,9 @@
 const axios = require('axios')
+const { OAuth2Client } = require('google-auth-library');
+const jwt = require('jsonwebtoken')
+const client = new OAuth2Client(process.env.CLIENT_ID);
+const User = require('../models/userModel')
+
 let ax = axios.create({
   baseURL: 'https://api.github.com'
 })
@@ -102,6 +107,48 @@ class UserController {
       .get(`/repos/${req.params.owner}/${req.params.repos}/readme`)
       .then(({ allReadme }) => {
         res.status(200).json(allReadme)
+      })
+      .catch(err => {
+        res.status(500).json(err)
+      })
+  }
+
+  static gLogin(req, res) {
+    // console.log(req.body)
+    let payload = null
+    client.verifyIdToken({
+      idToken: req.body.idToken,
+      audience: process.env.CLIENT_ID
+    })
+      .then(ticket => {
+        payload = ticket.getPayload()
+        // console.log(payload)
+        const user = payload
+        return User.findOne({
+          email: payload.email
+        })
+          .then(user => {
+            if (!user) {
+              return User.create({
+                email: payload.email,
+                name: payload.name,
+                password: '12345'
+              })
+            } else {
+              const token = jwt.sign({
+                email: user.email,
+                name: user.name
+              }, 'Rahasiakan')
+              res.status(200).json({ token })
+            }
+          })
+      })
+      .then(newUser => {
+        const token = jwt.sign({
+          email: newUser.email,
+          name: newUser.name
+        }, 'Rahasiakan')
+        res.status(200).json({ token })
       })
       .catch(err => {
         res.status(500).json(err)

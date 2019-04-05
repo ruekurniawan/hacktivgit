@@ -5,6 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="google-signin-client_id"
+    content="993360514159-nlpekr9j7h38fbab17rid6054tq1p3hv.apps.googleusercontent.com">
+
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <title>HacktivGit</title>
@@ -12,7 +15,8 @@
 
 <body>
   <h1>HacktivGit</h1>
-
+  <div id="login" class="g-signin2" data-onsuccess="onSignIn"></div>
+  <a id="logout" href="" onclick="signOut();">Sign out</a>
 
   <div class="row row-table">
     <div class="col-md-2 col-table">
@@ -32,7 +36,6 @@
         <ul id="git-readme"></ul>
       </div>
     </div>
-
   </div>
 
 
@@ -40,12 +43,56 @@
 
   </style>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
   <script>
+    function signOut() {
+      var auth2 = gapi.auth2.getAuthInstance();
+      auth2.signOut().then(function () {
+        console.log('User signed out.');
+      });
+      localStorage.clear()
+    }
+  </script>
+  <script>
+
+
+
+
     const baseUrl = 'http://localhost:3000'
     $(document).ready(function () {
+      preLogin()
+    })
+
+    function preLogin() {
+      $('#gith-list').hide()
+      $('#logout').hide()
+    }
+
+    function postLogin() {
       fetchMyRepo()
       fetchFollowing()
-    })
+      $('#login').hide()
+      $('#gith-list').show()
+      $('#logout').show()
+    }
+
+    function onSignIn(googleUser) {
+      postLogin()
+      var profile = googleUser.getBasicProfile();
+      var id_token = googleUser.getAuthResponse().id_token
+
+      $.ajax({
+        url: baseUrl + '/users/login',
+        method: 'POST',
+        data: { idToken: id_token }
+      })
+        .done((response) => {
+          localStorage.setItem('token', response.token)
+        })
+        .fail((jqXHR, textStatus) => {
+          console.log('request failed', textStatus)
+        })
+    }
 
     function fetchMyRepo() {
       $.ajax({
@@ -91,7 +138,7 @@
         url: `${baseUrl}/users/${user}/starred`
       })
         .done((response) => {
-          console.log((response));
+          // console.log((response));
 
           $('#gith-list').empty()
           $.each(response, (key, repo) => {
@@ -108,15 +155,15 @@
         })
     }
 
-    function fetchReadme(user, repos) {
-      event.preventDefault()
-      $.ajax({
-        method: 'get',
-        url: `${baseUrl}/users/${user}/starred`
-      })
-        
+    // function fetchReadme(user, repos) {
+    //   event.preventDefault()
+    //   $.ajax({
+    //     method: 'get',
+    //     url: `${baseUrl}/users/${user}/starred`
+    //   })
 
-    }
+
+    // }
   </script>
 </body>
 
